@@ -3,13 +3,14 @@ export interface Companion {id:number;species:string;level:number;xp:number;hp:n
 export interface Battle {kind:'wild'|'warden'|'rival';enemies:Companion[];enemy:number;active:number;turn:number;region:number;log:string[]}
 export interface State {version:1;seed:number;nextId:number;region:number;x:number;y:number;party:Companion[];storage:Companion[];seen:string[];caught:string[];nets:number;potions:number;coins:number;sigils:number;rival:boolean;ended:boolean;steps:number;battle:Battle|null;message:string}
 export type Command={type:'walk';dx:number;dy:number}|{type:'interact'}|{type:'encounter'}|{type:'challenge'}|{type:'rival'}|{type:'rest'}|{type:'buy';item:'net'|'potion'}|{type:'attack';move:number}|{type:'capture'}|{type:'potion'}|{type:'switch';index:number}|{type:'retreat'}|{type:'lead';index:number}|{type:'exchange';index:number;slot:number};
+export const SANCTUARY_CAPACITY=1000;
 export const maxHp=(c:Companion)=>28+c.level*7;
 export const maxFocus=(c:Companion)=>10+c.level*2;
-function make(s:State,id:string,level:number):Companion{const c={id:s.nextId++,species:id,level,xp:0,hp:0,focus:0,drowsy:0,guard:false};c.hp=maxHp(c);c.focus=maxFocus(c);return c;}
+function makeCompanion(s:State,speciesId:string,level:number):Companion{const c={id:s.nextId++,species:speciesId,level,xp:0,hp:0,focus:0,drowsy:0,guard:false};c.hp=maxHp(c);c.focus=maxFocus(c);return c;}
 export function newGame(starter:string,seed=20261011):State {
  if(!starters.includes(starter))throw Error('Unknown starter');
  const s:State={version:1,seed:seed>>>0,nextId:1,region:0,x:5,y:4,party:[],storage:[],seen:[starter],caught:[starter],nets:8,potions:4,coins:90,sigils:0,rival:false,ended:false,steps:0,battle:null,message:'Welcome to Dewhaven. Visit the Rootkeeper in the northeast. Grass shelters wild companions.'};
- s.party.push(make(s,starter,2));return s;
+ s.party.push(makeCompanion(s,starter,2));return s;
 }
 function random(s:State):number{s.seed=(Math.imul(s.seed,1664525)+1013904223)>>>0;return s.seed/4294967296;}
 function record(s:State,id:string){if(!s.seen.includes(id))s.seen.push(id);}
@@ -17,7 +18,7 @@ function startBattle(s:State,kind:Battle['kind']){
  const r=regions[s.region];
  const ids=kind==='wild'?[r.habitat[Math.floor(random(s)*r.habitat.length)]]:kind==='rival'?['pebblune']:r.team;
  const level=kind==='wild'?Math.max(2,r.level-1):kind==='rival'?2:r.level;
- s.battle={kind,enemies:ids.map(id=>make(s,id,level)),enemy:0,active:s.party.findIndex(c=>c.hp>0),turn:0,region:s.region,log:[kind==='wild'?`A wild ${species[ids[0]].name} emerges!`:kind==='rival'?'Lio: “Let’s see how far we’ve come!”':r.story]};
+ s.battle={kind,enemies:ids.map(id=>makeCompanion(s,id,level)),enemy:0,active:s.party.findIndex(c=>c.hp>0),turn:0,region:s.region,log:[kind==='wild'?`A wild ${species[ids[0]].name} emerges!`:kind==='rival'?'Lio: “Let’s see how far we’ve come!”':r.story]};
  ids.forEach(id=>record(s,id));
 }
 function log(s:State,text:string){s.battle!.log=[...s.battle!.log,text].slice(-6);}
@@ -48,6 +49,7 @@ function recover(s:State){s.battle=null;healParty(s);s.x=4;s.y=4;s.message='The 
 function enemyTurn(s:State){
  const b=s.battle!;b.turn++;const player=s.party[b.active];const foe=b.enemies[b.enemy];
  const options=moves(foe.species).map((m,i)=>({m,i})).filter(({m})=>m.level<=foe.level&&m.cost<=foe.focus&&!m.guard&&!m.status);
+ if(foe.hp<=0||player.hp<=0)return;
  const move=options[random(s)<0.55?options.length-1:0].i;
  damage(s,foe,player,move,true);
  if(!s.party.some(c=>c.hp>0)){recover(s);return;}
@@ -79,6 +81,7 @@ export function act(state:State,command:Command):State{
  }
  if(command.type==='capture'){
  if(b.kind!=='wild'||s.nets<=0||player.hp<=0)return state;
+ if(s.party.length===3&&s.storage.length>=SANCTUARY_CAPACITY){s.message='The sanctuary is full (1,000 companions). Your net was not spent.';return s;}
  s.nets--;const foe=b.enemies[b.enemy];
  if(random(s)<captureOdds(foe)){
  foe.drowsy=0;foe.guard=false;(s.party.length<3?s.party:s.storage).push(foe);
@@ -151,15 +154,15 @@ export function decodeSave(raw:string|null):State|null{
  try{
  if(!raw||raw.length>2000000)return null;const v:unknown=JSON.parse(raw);
  if(!object(v)||v.version!==1||!integer(v.seed,0,4294967295)||!integer(v.nextId,1,1000000000)||!integer(v.region,0,3)||!integer(v.x,1,17)||!integer(v.y,1,11)||!walkable(v.x,v.y))return null;
- if(!Array.isArray(v.party)||v.party.length<1||v.party.length>3||!v.party.every(validCompanion)||!v.party.some(c=>c.hp>0)||!Array.isArray(v.storage)||v.storage.length>10000||!v.storage.every(validCompanion))return null;
+ if(!Array.isArray(v.party)||v.party.length<1||v.party.length>3||!v.party.every(validCompanion)||!v.party.some(c=>c.hp>0)||!Array.isArray(v.storage)||v.storage.length>SANCTUARY_CAPACITY||!v.storage.every(validCompanion))return null;
  if(!validList(v.seen)||!validList(v.caught)||typeof v.rival!=='boolean'||typeof v.ended!=='boolean'||typeof v.message!=='string'||v.message.length>2000||!integer(v.sigils,0,3)||v.region>v.sigils||v.ended&&v.sigils!==3)return null;
  for(const key of ['nets','potions','coins','steps'])if(!integer(v[key],0,1000000000))return null;
  const seen=v.seen;const companions=[...v.party,...v.storage];const owned=new Set(companions.map(c=>c.species));
  if(v.caught.length!==owned.size||!v.caught.every(id=>owned.has(id)&&seen.includes(id)))return null;
  const all=[...companions];
  if(v.battle!==null){
- const b=v.battle;if(!object(b)||!['wild','warden','rival'].includes(String(b.kind))||!Array.isArray(b.enemies)||!b.enemies.length||b.enemies.length>3||!b.enemies.every(validCompanion)||!integer(b.enemy,0,b.enemies.length-1)||!integer(b.active,0,v.party.length-1)||!integer(b.turn,0,1000000000)||b.region!==v.region||!Array.isArray(b.log)||b.log.length>6||!b.log.every(l=>typeof l==='string'&&l.length<=2000))return null;
- if(b.enemies[b.enemy].hp===0||b.enemies.slice(0,b.enemy).some(c=>c.hp!==0)||b.enemies.some(c=>!seen.includes(c.species)))return null;
+ const b=v.battle;if(!object(b)||typeof b.kind!=='string'||!['wild','warden','rival'].includes(b.kind)||!Array.isArray(b.enemies)||!b.enemies.length||b.enemies.length>3||!b.enemies.every(validCompanion)||!integer(b.enemy,0,b.enemies.length-1)||!integer(b.active,0,v.party.length-1)||!integer(b.turn,0,1000000000)||b.region!==v.region||!Array.isArray(b.log)||b.log.length>6||!b.log.every(l=>typeof l==='string'&&l.length<=2000))return null;
+ if(b.enemies.slice(b.enemy).some(c=>c.hp===0)||b.enemies.slice(0,b.enemy).some(c=>c.hp!==0)||b.enemies.some(c=>!seen.includes(c.species)))return null;
  if(b.kind==='wild'&&b.enemies.length!==1||b.kind==='rival'&&(v.rival||v.region!==0)||b.kind==='warden'&&(v.ended||v.region<3&&v.sigils>v.region))return null;
  all.push(...b.enemies);
  }

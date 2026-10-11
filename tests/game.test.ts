@@ -1,3 +1,4 @@
+import {map} from '../src/data';
 import {describe,it,expect} from 'vitest';
 import {newGame,act,encodeSave,decodeSave,type State} from '../src/game';
 describe('expedition commands',()=>{
@@ -76,4 +77,46 @@ it('failed capture spends one item and one turn; fainted actors and trainer capt
  s=act(s,{type:'capture'});expect(s.nets).toBe(n-1);expect(s.battle!.turn).toBe(1);
  s.party[0].hp=0;expect(act(s,{type:'attack',move:0})).toEqual(s);expect(act(s,{type:'capture'})).toEqual(s);
  let w=newGame('spriglet');w.x=13;w.y=3;w=act(w,{type:'challenge'});expect(act(w,{type:'capture'})).toEqual(w);
+});
+it('rejects corrupt future enemies and non-string battle kinds',()=>{
+ let s=newGame('puddlepip');s.region=1;s.sigils=1;s.x=13;s.y=3;s=act(s,{type:'challenge'});
+ s.battle!.enemies[1].hp=0;expect(decodeSave(encodeSave(s))).toBeNull();
+ const invalid=act(newGame('spriglet'),{type:'encounter'});(invalid.battle as unknown as {kind:unknown}).kind=['wild'];expect(decodeSave(encodeSave(invalid))).toBeNull();
+});
+it('drowsy reduces exactly two attacks and shelter halves only the next hit',()=>{
+ let base=act(newGame('spriglet',1),{type:'encounter'});base.party[0].level=4;base.party[0].hp=56;base.party[0].focus=18;
+ base.battle!.enemies[0].species='pebblune';base.battle!.enemies[0].level=5;base.battle!.enemies[0].hp=63;base.battle!.enemies[0].focus=20;base.seed=1;
+ const normal=act(base,{type:'attack',move:0});expect(normal.party[0].hp).toBe(43);
+ let protectedState=act(base,{type:'attack',move:2});expect(protectedState.party[0].hp).toBe(49);protectedState.seed=1;
+ protectedState=act(protectedState,{type:'attack',move:0});expect(protectedState.party[0].hp).toBe(36);
+ let drowsy=act(base,{type:'attack',move:3});expect(drowsy.party[0].hp).toBe(48);drowsy.seed=1;
+ drowsy=act(drowsy,{type:'attack',move:0});expect(drowsy.party[0].hp).toBe(40);drowsy.seed=1;
+ drowsy=act(drowsy,{type:'attack',move:0});expect(drowsy.party[0].hp).toBe(27);
+});
+it('full sanctuary blocks capture without item loss or a turn, and its maximum valid save round trips',()=>{
+ let s=newGame('spriglet');s.party.push({...s.party[0],id:s.nextId++},{...s.party[0],id:s.nextId++});
+ for(let i=0;i<1000;i++)s.storage.push({...s.party[0],id:s.nextId++});
+ s=act(s,{type:'encounter'});const after=act(s,{type:'capture'});expect(after.nets).toBe(8);expect(after.battle!.turn).toBe(0);expect(after.storage).toHaveLength(1000);expect(decodeSave(encodeSave(after))).toEqual(after);
+});
+function fight(s:State):State{for(let turn=0;s.battle&&turn<100;turn++){const active=s.party[s.battle.active];s=act(s,{type:'attack',move:active.level>=6&&active.focus>=4?4:active.focus>=2?1:0});}return s;}
+function walk(s:State,dx:number,dy:number,count:number){for(let i=0;i<count;i++){s=act(s,{type:'walk',dx,dy});if(s.battle)s=fight(s);}return s;}
+function toCamp(s:State){s=walk(s,0,s.y>5?-1:1,Math.abs(s.y-5));s=walk(s,s.x>3?-1:1,0,Math.abs(s.x-3));s=walk(s,0,-1,1);return act(s,{type:'rest'});}
+it.each(['spriglet','puddlepip','cindervix'])('command-driven crossings and campaign saves complete from %s',starter=>{
+ let s=newGame(starter,42);
+ for(let r=0;r<4;r++){
+ expect(s.region).toBe(r);s=toCamp(s);
+ for(let training=0;training<12;training++){s=fight(act(s,{type:'encounter'}));s=toCamp(s);}
+ // Safe road from camp, no coordinate or sigil assignments.
+ s=walk(s,0,1,1);s=walk(s,1,0,10);s=walk(s,0,-1,2);expect([s.x,s.y]).toEqual([13,3]);
+ s=fight(act(s,{type:'challenge'}));expect(s.sigils).toBe(Math.min(3,r+1));expect(decodeSave(encodeSave(s))).toEqual(s);
+ if(r<3){s=walk(s,1,0,4);expect(s.region).toBe(r+1);expect([s.x,s.y]).toEqual([2,10]);}
+ }expect(s.ended).toBe(true);
+});
+it('all map rows share visible geometry and gate positions',()=>{
+ expect(map).toHaveLength(13);for(const row of map)expect(row.length).toBe(19);
+ expect(map[3][17]).toBe('>');expect(map[3][13]).toBe('W');expect(map[10][1]).toBe('<');
+});
+it('battle ignores movement, healing, purchases and exploration commands; inspection has no command',()=>{
+ const s=act(newGame('spriglet'),{type:'encounter'});
+ for(const c of [{type:'walk',dx:1,dy:0},{type:'rest'},{type:'buy',item:'net'},{type:'lead',index:0},{type:'challenge'},{type:'encounter'}] as const)expect(act(s,c)).toEqual(s);
 });

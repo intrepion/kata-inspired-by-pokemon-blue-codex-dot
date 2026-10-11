@@ -34,9 +34,9 @@ export function multiplier(attack:Element,defense:Element):number{
 // Hand-authored island, shared road geometry with region-specific illustration.
 export const map=[
  '~~~~~~~~~~~~~~~~~~~',
- '~ttt...ttt...tttttt~',
- '~tt....ggg....ttttt~',
- '~......ggg....W...>~',
+ '~ttt...ttt...ttttt~',
+ '~tt....ggg....tttt~',
+ '~......ggg...W...>~',
  '~..H...ggg........~',
  '~.....===.....tt..~',
  '~..S..===..ggg....~',
