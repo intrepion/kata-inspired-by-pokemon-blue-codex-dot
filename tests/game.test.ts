@@ -1,6 +1,6 @@
 import {map} from '../src/data';
 import {describe,it,expect} from 'vitest';
-import {newGame,act,encodeSave,decodeSave,type State} from '../src/game';
+import {newGame,act,encodeSave,decodeSave,captureOdds,type State} from '../src/game';
 describe('expedition commands',()=>{
  it('starts a seeded expedition with one healthy starter and supplies',()=>{
   const s=newGame('spriglet',42); expect(s.party[0].species).toBe('spriglet'); expect(s.nets).toBe(8); expect(s.region).toBe(0);
@@ -96,7 +96,7 @@ it('drowsy reduces exactly two attacks and shelter halves only the next hit',()=
 it('full sanctuary blocks capture without item loss or a turn, and its maximum valid save round trips',()=>{
  let s=newGame('spriglet');s.party.push({...s.party[0],id:s.nextId++},{...s.party[0],id:s.nextId++});
  for(let i=0;i<1000;i++)s.storage.push({...s.party[0],id:s.nextId++});
- s=act(s,{type:'encounter'});const after=act(s,{type:'capture'});expect(after.nets).toBe(8);expect(after.battle!.turn).toBe(0);expect(after.storage).toHaveLength(1000);expect(decodeSave(encodeSave(after))).toEqual(after);
+ s=act(s,{type:'encounter'});const after=act(s,{type:'capture'});expect(after.nets).toBe(8);expect(after.battle!.turn).toBe(0);expect(after.storage).toHaveLength(1000);expect(after.battle!.log.at(-1)).toContain('Your net was not spent');expect(decodeSave(encodeSave(after))).toEqual(after);
 });
 function fight(s:State):State{for(let turn=0;s.battle&&turn<100;turn++){const active=s.party[s.battle.active];s=act(s,{type:'attack',move:active.level>=6&&active.focus>=4?4:active.focus>=2?1:0});}return s;}
 function walk(s:State,dx:number,dy:number,count:number){for(let i=0;i<count;i++){s=act(s,{type:'walk',dx,dy});if(s.battle)s=fight(s);}return s;}
@@ -120,3 +120,5 @@ it('battle ignores movement, healing, purchases and exploration commands; inspec
  const s=act(newGame('spriglet'),{type:'encounter'});
  for(const c of [{type:'walk',dx:1,dy:0},{type:'rest'},{type:'buy',item:'net'},{type:'lead',index:0},{type:'challenge'},{type:'encounter'}] as const)expect(act(s,c)).toEqual(s);
 });
+
+it('capture odds are understandable and bounded from a quarter to nine tenths',()=>{const c=newGame('spriglet').party[0];expect(captureOdds(c)).toBe(0.25);c.hp=0;expect(captureOdds(c)).toBe(0.9);c.hp=21;expect(captureOdds(c)).toBeCloseTo(0.575);});

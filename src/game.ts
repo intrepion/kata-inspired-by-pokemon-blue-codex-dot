@@ -81,7 +81,7 @@ export function act(state:State,command:Command):State{
  }
  if(command.type==='capture'){
  if(b.kind!=='wild'||s.nets<=0||player.hp<=0)return state;
- if(s.party.length===3&&s.storage.length>=SANCTUARY_CAPACITY){s.message='The sanctuary is full (1,000 companions). Your net was not spent.';return s;}
+ if(s.party.length===3&&s.storage.length>=SANCTUARY_CAPACITY){s.message='The sanctuary is full (1,000 companions). Your net was not spent.';log(s,s.message);return s;}
  s.nets--;const foe=b.enemies[b.enemy];
  if(random(s)<captureOdds(foe)){
  foe.drowsy=0;foe.guard=false;(s.party.length<3?s.party:s.storage).push(foe);
