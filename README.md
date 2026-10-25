@@ -38,3 +38,7 @@ Private repository: https://github.com/intrepion/kata-inspired-by-pokemon-blue-c
 
 ![Lantern Trial](docs/screenshots/lantern-trial.jpg)
 ![Ending reached through visible controls](docs/screenshots/ending.jpg)
+
+## Play online
+
+[Play the hosted game](https://intrepion.github.io/kata-inspired-by-pokemon-blue-codex-dot/)
