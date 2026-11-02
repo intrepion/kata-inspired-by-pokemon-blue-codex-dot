@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "gameId": "kata-inspired-by-pokemon-blue-codex-dot",
+  "playUrl": "https://intrepion.github.io/kata-inspired-by-pokemon-blue-codex-dot/",
+  "screenshots": [
+    {
+      "path": "arcade/screenshots/view-01.jpg",
+      "sha256": "d94f16b611228e48bf818ade670530096bd5aa37a37a0e8c4aeeecbc0481d547",
+      "alt": "Gameplay capture 1",
+      "provenance": {
+        "kind": "existing_repository_capture",
+        "sourcePath": "docs/screenshots/lantern-trial.jpg",
+        "deployedBuild": null,
+        "captureDate": null
+      }
+    }
+  ]
+}

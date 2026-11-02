@@ -42,3 +42,7 @@ Private repository: https://github.com/intrepion/kata-inspired-by-pokemon-blue-c
 ## Play online
 
 [Play the hosted game](https://intrepion.github.io/kata-inspired-by-pokemon-blue-codex-dot/)
+
+## Arcade metadata
+
+See [docs/arcade-metadata.md](docs/arcade-metadata.md) for the game-owned manifest and screenshot provenance.
