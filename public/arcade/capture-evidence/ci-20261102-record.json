@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "workflowCommit": "9ac4f3273d4ee128bc0b41c1ad615bd2cf30083b",
+  "sourceCommit": "cc13c6b7a4b24a9b71d066b511c071552a646882",
+  "runId": "41451364289",
+  "url": "http://127.0.0.1:4283/",
+  "inputs": {
+    "index.html": "57e944d2171260dce346c6c8d0b5707908e77c474dab4e1ce23c89ae2996ec68",
+    "assets/index-BhlOGO0h.css": "61a08a7580f86c19e924236468ec5261abdf7389952a1ea1a5309c602d14960d",
+    "assets/index-DRpyLYi2.js": "845af6626c9a0d4dc0d15f79d212e8a62e2436698feef02fb26b1cdc758d4acc"
+  },
+  "browser": "153.0.8010.12",
+  "viewport": {
+    "width": 1280,
+    "height": 1000
+  },
+  "screenshots": [
+    "tidebound-01.png",
+    "tidebound-02.png"
+  ]
+}

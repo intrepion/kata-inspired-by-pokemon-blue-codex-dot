@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "gameId": "kata-inspired-by-pokemon-blue-codex-dot",
   "playUrl": "https://intrepion.github.io/kata-inspired-by-pokemon-blue-codex-dot/",
   "screenshots": [
@@ -12,6 +12,46 @@
         "sourcePath": "docs/screenshots/lantern-trial.jpg",
         "deployedBuild": null,
         "captureDate": null
+      }
+    },
+    {
+      "path": "arcade/screenshots/ci-20261102-01.jpg",
+      "sha256": "47072130334cbaf8731f192e3427fa01cf03599f2c2555d63524e0e6b1b5ac0a",
+      "alt": "Tidebound gameplay, view 1",
+      "provenance": {
+        "kind": "ci_gameplay_capture",
+        "sourcePath": "arcade/capture-evidence/ci-20261102-01.png",
+        "sourceSha256": "90ac0e6a4c077877362ac984176dc1b32b97ce4b53c379f0c9de62a2e8eedc84",
+        "captureCommit": "cc13c6b7a4b24a9b71d066b511c071552a646882",
+        "workflowRunId": "41451364289",
+        "inputHashes": {
+          "index.html": "57e944d2171260dce346c6c8d0b5707908e77c474dab4e1ce23c89ae2996ec68",
+          "assets/index-BhlOGO0h.css": "61a08a7580f86c19e924236468ec5261abdf7389952a1ea1a5309c602d14960d",
+          "assets/index-DRpyLYi2.js": "845af6626c9a0d4dc0d15f79d212e8a62e2436698feef02fb26b1cdc758d4acc"
+        },
+        "publishedFilesVerifiedAt": "2026-11-02T19:01:20Z",
+        "captureRecordPath": "arcade/capture-evidence/ci-20261102-record.json",
+        "captureRecordSha256": "d4772783c42825c3bca58517c5f6a711439d42d0f6737b886e88ab074cbab518"
+      }
+    },
+    {
+      "path": "arcade/screenshots/ci-20261102-02.jpg",
+      "sha256": "1b51636a3f69b853ae42e80a75e132c3916e839c6a3b52e2634d25eae93ecaf0",
+      "alt": "Tidebound gameplay, view 2",
+      "provenance": {
+        "kind": "ci_gameplay_capture",
+        "sourcePath": "arcade/capture-evidence/ci-20261102-02.png",
+        "sourceSha256": "6ded31085617a959ab3cf72d68e8a106c2b33390e3d7ce81308703a52c9c60cf",
+        "captureCommit": "cc13c6b7a4b24a9b71d066b511c071552a646882",
+        "workflowRunId": "41451364289",
+        "inputHashes": {
+          "index.html": "57e944d2171260dce346c6c8d0b5707908e77c474dab4e1ce23c89ae2996ec68",
+          "assets/index-BhlOGO0h.css": "61a08a7580f86c19e924236468ec5261abdf7389952a1ea1a5309c602d14960d",
+          "assets/index-DRpyLYi2.js": "845af6626c9a0d4dc0d15f79d212e8a62e2436698feef02fb26b1cdc758d4acc"
+        },
+        "publishedFilesVerifiedAt": "2026-11-02T19:01:20Z",
+        "captureRecordPath": "arcade/capture-evidence/ci-20261102-record.json",
+        "captureRecordSha256": "d4772783c42825c3bca58517c5f6a711439d42d0f6737b886e88ab074cbab518"
       }
     }
   ]
